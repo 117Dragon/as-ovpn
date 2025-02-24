@@ -62,23 +62,25 @@ sudo echo "0 8 1 * * /usr/local/sbin/certbotrenew.sh" >> /etc/crontab
 
 # Preparation for patching
 sudo systemctl stop openvpnas
-# git clone https://github.com/117Dragon/as-ovpn.git
 sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg_
 sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /tmp/pyovpn-2.0-py3.10.egg
 
 # Patching 
 DN=example.com
-ARCHIVE="./as-ovpn/data.rar"
+ARCHIVE="/tmp/as-ovpn/data/data.zip"
 PS="Orwell-1984"
 mkdir /tmp/temp_egg
 mkdir /tmp/temp_patch
 unzip pyovpn-2.0-py3.10.egg -d /tmp/temp_egg
-unzip -P "$PS" "$ARCHIVE" -d temp_patch
+unzip -P "$PS" "$ARCHIVE" -d /tmp/temp_patch
+
 # Replace
 cp /tmp/temp_patch/info.pyc /tmp/temp_egg/pyovpn/lic/info.pyc
+
 # Make .egg and patching
 zip -r /tmp/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
 sudo cp /tmp/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg
+
 # Save file for next download
 sudo cp /tmp/patch/openvpn-as-kg.exe /tmp/patch/readme.txt /tmp/patch
 
