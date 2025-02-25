@@ -49,6 +49,7 @@ sudo mv /etc/letsencrypt/archive/$DOMAIN/fullchain_nginx.pem /etc/nginx/ssl/$DOM
 sudo cp /etc/letsencrypt/archive/$DOMAIN/privkey1.pem /etc/nginx/ssl/$DOMAIN/
 sudo systemctl restart nginx
 EOL
+
 sleep 3
 
 # Make file exec
@@ -66,11 +67,10 @@ sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /usr/local/openvp
 sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /tmp/pyovpn-2.0-py3.10.egg
 
 # Patching 
-DN=example.com
 ARCHIVE="/tmp/as-ovpn/data/data.zip"
 PS="Orwell-1984"
-mkdir /tmp/temp_egg
-mkdir /tmp/temp_patch
+mkdir -p /tmp/temp_egg
+mkdir -p /tmp/temp_patch
 unzip pyovpn-2.0-py3.10.egg -d /tmp/temp_egg
 unzip -P "$PS" "$ARCHIVE" -d /tmp/temp_patch
 
@@ -82,13 +82,14 @@ zip -r /tmp/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
 sudo cp /tmp/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg
 
 # Save file for next download
-sudo cp /tmp/patch/openvpn-as-kg.exe /tmp/patch/readme.txt /tmp/patch
-
+sudo mkdir -p /tmp/patch
+sudo cp /tmp/temp_patch/openvpn-as-kg.exe /tmp/temp_patch/readme.txt /tmp/patch
 
 # Replace domain in nginx configs
 sed -i 's/example.com/'$DOMAIN'/g' /tmp/temp_patch/nginx/crt.conf /tmp/temp_patch/nginx/vhost.conf
 
 # Add symlink and remove default vHost
+sudo mkdir -p /etc/nginx/ssl
 sudo cp /tmp/temp_patch/nginx/crt.conf /etc/nginx/ssl/$DOMAIN/crt.conf
 sudo cp /tmp/temp_patch/nginx/proxy.conf /etc/nginx/conf.d/
 sudo cp /tmp/temp_patch/nginx/ssl.conf /etc/nginx/conf.d/
@@ -110,6 +111,7 @@ echo "**************************************************************************
 ****  !!!!!Auth on https://$ip_addr:943/admin  ********************************************************************************\n
 ****  !!!!!Be sure to replace the value with your own (domain):!!!!!!  ********************************************************\n
 ****  !!!!!'Admin  UI - Network Setting - Hostname to your previously specified domain:'!!!!!!  *******************************\n
+echo "*******************************************************************************************************************************\n
 *******************************************************************************************************************************\n
 ****  Download patch from "/tmp/patch"  *******************************************************************\n
 *******************************************************************************************************************************"
