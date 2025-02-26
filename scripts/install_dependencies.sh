@@ -7,4 +7,4 @@ sudo mkdir -p /etc/apt/keyrings && sudo curl -fsSL https://packages.openvpn.net/
 sudo echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/as-repository.asc] http://packages.openvpn.net/as/debian jammy main" | sudo tee /etc/apt/sources.list.d/openvpn-as-repo.list
 sudo apt update && sudo apt -y install openvpn-as
 sudo systemctl stop nginx
-sudo sh /tmp/as-ovpn/scripts/install_ovpnas.sh
+sudo sh /tmp/as-ovpn/scripts/install_as.sh
