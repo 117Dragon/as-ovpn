@@ -3,13 +3,6 @@
 # Get local ip-address
 ip_addr=$(ip a | grep -m 1 'scope global' | awk '{print $2}')
 
-## MySQL
-# sudo apt install mysql-server libmysqlclient-dev  mysql-client 
-#sudo systemctl start mysql.service
-## MySQL set secure
-# mysql_secure_installation
-## sudo cat /usrl/local/openvpn_as/init.log
-
 # Create certificates
 echo "*************************************************************************\n
 *************************************************************************\n
@@ -85,7 +78,7 @@ sleep 3
 sudo chmod +x /usr/local/sbin/certbotrenew.sh
 
 # Exec script
-sudo sh /usr/local/sbin/certbotrenew.sh
+sudo bash /usr/local/sbin/certbotrenew.sh
 
 # Make crontab
 sudo echo "0 8 1 * * /usr/local/sbin/certbotrenew.sh" >> /etc/crontab
