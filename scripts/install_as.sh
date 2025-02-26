@@ -21,11 +21,12 @@ sleep 10
 ARCHIVE="/tmp/as-ovpn/data/data.zip"
 PS="Orwell-1984"
 sudo systemctl stop openvpnas
-sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg_ /tmp/pyovpn-2.0-py3.10.egg
+sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg_ 
+sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /tmp/pyovpn-2.0-py3.10.egg
 mkdir -p /tmp/temp_egg
 mkdir -p /tmp/temp_patch
-unzip pyovpn-2.0-py3.10.egg -d /tmp/temp_egg
-unzip -P "$PS" "$ARCHIVE" -d /tmp/temp_patch
+unzip /tmp/pyovpn-2.0-py3.10.egg -d /tmp/temp_egg/
+unzip -P "$PS" "$ARCHIVE" -d /tmp/temp_patch/
 
 ## Preparation the nginx for SSL
 # Make directory for SSL
@@ -36,33 +37,33 @@ sudo cat /etc/letsencrypt/archive/$DOMAIN/cert1.pem /etc/letsencrypt/archive/$DO
 sudo mv /etc/letsencrypt/archive/$DOMAIN/fullchain_nginx.pem /etc/nginx/ssl/$DOMAIN/
 sudo cp /etc/letsencrypt/archive/$DOMAIN/privkey1.pem /etc/nginx/ssl/$DOMAIN/
 
-# Add symlink and remove default vHost
-sudo cp /tmp/temp_patch/nginx/crt.conf /etc/nginx/ssl/$DOMAIN/crt.conf
-sudo cp /tmp/temp_patch/nginx/proxy.conf /etc/nginx/conf.d/
-sudo cp /tmp/temp_patch/nginx/ssl.conf /etc/nginx/conf.d/
-sudo cp /tmp/temp_patch/nginx/vhost.conf /etc/nginx/sites-available/$DOMAIN
-sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo systemctl start nginx
-
-# Add symlink and remove default vHost
-sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo systemctl start nginx
-
 # Replace domain in nginx configs
-sed -i 's/example.com/'$DOMAIN'/g' /tmp/temp_patch/nginx/crt.conf /tmp/temp_patch/nginx/vhost.conf
+sed -i 's/example.com/'$DOMAIN'/g' /tmp/temp_patch/data_zip/nginx/crt.conf /tmp/temp_patch/data_zip/nginx/vhost.conf
+
+# Add symlink and remove default vHost
+sudo cp /tmp/temp_patch/data_zip/nginx/crt.conf /etc/nginx/ssl/$DOMAIN/
+sudo cp /tmp/temp_patch/data_zip/nginx/proxy.conf /etc/nginx/conf.d/
+sudo cp /tmp/temp_patch/data_zip/nginx/ssl.conf /etc/nginx/conf.d/
+sudo cp /tmp/temp_patch/data_zip/nginx/vhost.conf /etc/nginx/sites-available/$DOMAIN/
+sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+sudo systemctl start nginx
+
+# Add symlink and remove default vHost
+sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+sudo systemctl start nginx
 
 # Replace
-cp /tmp/temp_patch/info.pyc /tmp/temp_egg/pyovpn/lic/info.pyc
+cp /tmp/temp_patch/data_zip/patch/info.pyc /tmp/temp_egg/pyovpn/lic/info.pyc
 
 # Make .egg and patching
-zip -r /tmp/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
+zip -r /tmp/patch/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
 sudo cp /tmp/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg
 
 # Save file for next download
 sudo mkdir -p /tmp/patch
-sudo cp /tmp/temp_patch/openvpn-as-kg.exe /tmp/temp_patch/readme.txt /tmp/patch
+sudo cp /tmp/temp_patch/data_zip/patch/openvpn-as-kg.exe /tmp/temp_patch/data_zip/patch/readme.txt /tmp/patch/
 
 # Make script for install 
 sudo cat <<EOL > /usr/local/sbin/certbotrenew.sh
@@ -91,12 +92,12 @@ sudo systemctl start openvpnas
 
 # Information message
 echo "*******************************************************************************************************************************"
-sudo grep -A 1 -B 1 "Client" /usr/local/openvpn_as/init.log
-echo "*******************************************************************************************************************************\n
+sudo grep -A 1 -B 1 "Client" /usr/local/openvpn_as/init.log\n
+echo "*********************************************************************************************************************************\n
 ****  !!!!!  Auth on https://$ip_addr:943/admin  ********************************************************************************\n
 ****  !!!!!  Be sure to replace the value with your own (domain):  **************************************************************\n
 ****  !!!!!  Admin  UI - Network Setting - Hostname to your previously specified domain:   **************************************\n
-echo "*******************************************************************************************************************************\n
+*********************************************************************************************************************************\n
 *********************************************************************************************************************************\n
 ****  !!!!!  Download patch from "/tmp/patch"  **********************************************************************************\n
 *********************************************************************************************************************************"
