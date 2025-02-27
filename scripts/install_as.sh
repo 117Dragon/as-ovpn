@@ -1,7 +1,16 @@
 #!/bin/bash 
 
+# Variables
 # Get local ip-address
 ip_addr=$(ip a | grep -m 1 'scope global' | awk '{print $2}')
+# path ovpnas
+AS=/usr/local/openvpn_as/lib/python/
+# All files of patch
+PATCH=/tmp/patch/
+# Patch files
+PFILE=pyovpn-2.0-py3.10.egg
+# Let's Encrypt path
+LPATH=/etc/letsencrypt/archive/
 
 # Create certificates
 echo "*************************************************************************\n
@@ -9,42 +18,42 @@ echo "*************************************************************************\
 ****  Don't forget to open or redirect port 80 for the OpenVPN Server  **\n
 *************************************************************************\n
 *************************************************************************"
+sleep 10
 
 echo "Enter domain for create a certificate"
 read DOMAIN
 echo "Enter your e-mail for renewal and security notices"
 read EMAIL
 certbot certonly --standalone --email $EMAIL --preferred-challenges http -d $DOMAIN
-sleep 10
+sleep 5
 
 # Preparation to patching
 ARCHIVE="/tmp/as-ovpn/data/data.zip"
 PS="Orwell-1984"
+mkdir -p $PATCH
 sudo systemctl stop openvpnas
-sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg_ 
-sudo cp /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg /tmp/pyovpn-2.0-py3.10.egg
-mkdir -p /tmp/temp_egg
-mkdir -p /tmp/temp_patch
-unzip /tmp/pyovpn-2.0-py3.10.egg -d /tmp/temp_egg/
-unzip -P "$PS" "$ARCHIVE" -d /tmp/temp_patch/
+sudo cp $AS$PFILE $AS$PFILE 
+sudo cp $AS$PFILE $PATCH
+unzip $PATCH$PFILE -d "$PATCH"tmp
+unzip -P $PS $ARCHIVE -d $PATCH
 
 ## Preparation the nginx for SSL
 # Make directory for SSL
 sudo mkdir -p /etc/nginx/ssl/$DOMAIN
 
 # Make certificate for nginx
-sudo cat /etc/letsencrypt/archive/$DOMAIN/cert1.pem /etc/letsencrypt/archive/$DOMAIN/fullchain1.pem > /etc/letsencrypt/archive/$DOMAIN/fullchain_nginx.pem 
-sudo mv /etc/letsencrypt/archive/$DOMAIN/fullchain_nginx.pem /etc/nginx/ssl/$DOMAIN/
-sudo cp /etc/letsencrypt/archive/$DOMAIN/privkey1.pem /etc/nginx/ssl/$DOMAIN/
+sudo cat $LPATH$DOMAIN/cert1.pem $LPATH$DOMAIN/fullchain1.pem > $LPATH$DOMAIN/fullchain_nginx.pem 
+sudo mv $LPATH$DOMAIN/fullchain_nginx.pem /etc/nginx/ssl/$DOMAIN/
+sudo cp $LPATH$DOMAIN/privkey1.pem /etc/nginx/ssl/$DOMAIN/
 
 # Replace domain in nginx configs
 sed -i 's/example.com/'$DOMAIN'/g' /tmp/temp_patch/data_zip/nginx/crt.conf /tmp/temp_patch/data_zip/nginx/vhost.conf
 
 # Add symlink and remove default vHost
-sudo cp /tmp/temp_patch/data_zip/nginx/crt.conf /etc/nginx/ssl/$DOMAIN/
-sudo cp /tmp/temp_patch/data_zip/nginx/proxy.conf /etc/nginx/conf.d/
-sudo cp /tmp/temp_patch/data_zip/nginx/ssl.conf /etc/nginx/conf.d/
-sudo cp /tmp/temp_patch/data_zip/nginx/vhost.conf /etc/nginx/sites-available/$DOMAIN/
+sudo cp "$PATCH"nginx/crt.conf /etc/nginx/ssl/$DOMAIN/
+sudo cp "$PATCH"nginx/proxy.conf /etc/nginx/conf.d/
+sudo cp "$PATCH"nginx/ssl.conf /etc/nginx/conf.d/
+sudo cp "$PATCH"nginx/vhost.conf /etc/nginx/sites-available/$DOMAIN/
 sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
 sudo systemctl start nginx
@@ -55,10 +64,10 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo systemctl start nginx
 
 # Replace
-cp /tmp/temp_patch/data_zip/patch/info.pyc /tmp/temp_egg/pyovpn/lic/info.pyc
+cp "$PATCH"patch/info.pyc "$PATCH"tmp/pyovpn/lic/info.pyc
 
 # Make .egg and patching
-zip -r /tmp/patch/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
+zip -r "$PATCH"tmp/patch/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
 sudo cp /tmp/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg
 
 # Save file for next download
