@@ -47,7 +47,7 @@ sudo mv $LPATH$DOMAIN/fullchain_nginx.pem /etc/nginx/ssl/$DOMAIN/
 sudo cp $LPATH$DOMAIN/privkey1.pem /etc/nginx/ssl/$DOMAIN/
 
 # Replace domain in nginx configs
-sed -i 's/example.com/'$DOMAIN'/g' /tmp/temp_patch/data_zip/nginx/crt.conf /tmp/temp_patch/data_zip/nginx/vhost.conf
+sed -i 's/example.com/'$DOMAIN'/g' "$PATCH"nginx/crt.conf "$PATCH"nginx/vhost.conf
 
 # Add symlink and remove default vHost
 sudo cp "$PATCH"nginx/crt.conf /etc/nginx/ssl/$DOMAIN/
@@ -67,12 +67,12 @@ sudo systemctl start nginx
 cp "$PATCH"patch/info.pyc "$PATCH"tmp/pyovpn/lic/info.pyc
 
 # Make .egg and patching
-zip -r "$PATCH"tmp/patch/pyovpn-2.0-py3.10.egg /tmp/temp_egg/*
-sudo cp /tmp/pyovpn-2.0-py3.10.egg /usr/local/openvpn_as/lib/python/pyovpn-2.0-py3.10.egg
+zip -r "$PATCH"tmp/patch/$PFILE /tmp/temp_egg/*
+sudo cp /tmp/$PFILE /usr/local/openvpn_as/lib/python/$PFILE
 
 # Save file for next download
 sudo mkdir -p /tmp/patch
-sudo cp /tmp/temp_patch/data_zip/patch/openvpn-as-kg.exe /tmp/temp_patch/data_zip/patch/readme.txt /tmp/patch/
+sudo cp "$PATCH"openvpn-as-kg.exe "$PATCH"readme.txt /tmp/patch/
 
 # Make script for install 
 sudo cat <<EOL > /usr/local/sbin/certbotrenew.sh
